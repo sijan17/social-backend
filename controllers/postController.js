@@ -22,6 +22,11 @@ module.exports.postOne = async (req, res, next) => {
       post,
     });
 
+    const updateUser = await User.updateOne(
+      { _id: req.user.id },
+      { $inc: { postsCount: 1 } }
+    );
+
     const newPost = {
       id: postOne._id,
       post: postOne.post,
@@ -50,7 +55,6 @@ module.exports.GetPosts = async (req, res, next) => {
       .exec((err, posts) => {
         if (err) throw err;
         posts = posts.filter((post) => post.userId !== null);
-        console.log(posts);
         const modifiedPosts = posts.map((post) => ({
           id: post._id,
           post: post.post,
@@ -77,7 +81,6 @@ module.exports.likePost = async (req, res, next) => {
       { _id: req.params.id },
       { likes: 1, _id: 0 }
     );
-    console.log(post.likes);
     if (post.likes.includes(req.user.id)) {
       const unlikePost = await Post.updateOne(
         { _id: req.params.id },

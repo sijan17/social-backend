@@ -19,12 +19,32 @@ const userSchema = new mongoose.Schema({
     unique: false,
     min: 6,
   },
+  location: {
+    type: String,
+    required: true,
+    unique: false,
+    default: "Not Set",
+  },
+  bio: {
+    type: String,
+    max: 200,
+  },
+  joinedAt: {
+    type: Date,
+    required: true,
+    default: new Date(),
+  },
   following: {
     type: Array,
+    default: [],
   },
-  isAvatarImageSet: {
-    type: Boolean,
-    default: false,
+  followers: {
+    type: Array,
+    default: [],
+  },
+  postsCount: {
+    type: Number,
+    default: 0,
   },
   avatarImage: {
     type: String,
