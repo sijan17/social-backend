@@ -50,6 +50,7 @@ module.exports.GetPosts = async (req, res, next) => {
       .exec((err, posts) => {
         if (err) throw err;
         posts = posts.filter((post) => post.userId !== null);
+        console.log(posts);
         const modifiedPosts = posts.map((post) => ({
           id: post._id,
           post: post.post,

@@ -24,11 +24,26 @@ module.exports.setAvatar = async (req, res, next) => {
 
 module.exports.getUsers = async (req, res, next) => {
   try {
-    const users = await User.find({ _id: { $ne: req.user.id } }).select([
-      "email",
-      "username",
-      "avatarImage",
-      "_id",
+    const curUser = await User.findById(req.user.id);
+    const followingList = curUser.following;
+    const users = await User.aggregate([
+      {
+        $match: {
+          _id: { $ne: req.user.id },
+        },
+      },
+      {
+        $project: {
+          email: 1,
+          username: 1,
+          avatarImage: 1,
+          following: 1,
+          isFollowed: {
+            $in: ["$_id", followingList],
+          },
+          id: "$_id",
+        },
+      },
     ]);
     return res.json({ success: true, users: users });
   } catch (ex) {
@@ -65,19 +80,24 @@ module.exports.follow = async (req, res, next) => {
   try {
     const userId = req.user.id;
     const followId = req.params.id;
-    const user = await User.findById(userId);
-    const followingIndex = user.following.indexOf(followId);
+    console.log(userId + " " + followId);
+    if (userId !== followId) {
+      const user = await User.findById(userId);
+      const followingIndex = user.following.indexOf(followId);
 
-    if (followingIndex === -1) {
-      user.following.push(followId);
-      await user.save();
-      res.send("User followed");
+      if (followingIndex === -1) {
+        user.following.push(followId);
+        await user.save();
+        return res.json({ success: true, followed: true });
+      } else {
+        user.following.splice(followingIndex, 1);
+        await user.save();
+        return res.json({ success: true, followed: false });
+      }
     } else {
-      user.following.splice(followingIndex, 1);
-      await user.save();
-      res.send("User unfollowed");
+      return res.json({ success: false });
     }
   } catch (ex) {
-    next(ex);
+    return res.json({ success: false });
   }
 };
