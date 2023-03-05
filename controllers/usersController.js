@@ -33,14 +33,14 @@ module.exports.getUsers = async (req, res, next) => {
     );
 
     const newUsers = users.map((user) => {
-      if (!followingList.includes(user._id)) {
-        return {
-          id: user._id,
-          username: user.username,
-          avatarImage: user.avatarImage,
-          isFollowed: followingList.includes(user._id) ? true : false,
-        };
-      }
+      // if (!followingList.includes(user._id)) {
+      return {
+        id: user._id,
+        username: user.username,
+        avatarImage: user.avatarImage,
+        isFollowed: followingList.includes(user._id) ? true : false,
+      };
+      // }
     });
 
     return res.json({ success: true, users: newUsers });

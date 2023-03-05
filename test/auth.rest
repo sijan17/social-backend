@@ -1,0 +1,7 @@
+POST http://localhost:5000/api/message/getmessages
+Content-Type: application/json
+
+{
+    "from" : "64036b0d81c2b6bd2eb1db79",
+    "to" : "64036630981bf703d941e583"
+}

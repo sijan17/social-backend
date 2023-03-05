@@ -4,8 +4,10 @@ const mongoose = require("mongoose");
 const authRoutes = require("./routes/authRoutes");
 const userRoutes = require("./routes/userRoutes");
 const postRoutes = require("./routes/postRoutes");
+const messageRoutes = require("./routes/messageRoutes");
 
 const app = express();
+const socket = require("socket.io");
 require("dotenv").config();
 app.use(cors());
 app.use(express.json());
@@ -13,6 +15,7 @@ app.use(express.json());
 app.use("/api/auth", authRoutes);
 app.use("/api/user", userRoutes);
 app.use("/api/post", postRoutes);
+app.use("/api/message", messageRoutes);
 
 mongoose.set("strictQuery", false);
 mongoose
@@ -29,4 +32,27 @@ mongoose
 
 const server = app.listen(process.env.PORT, () => {
   console.log("server started on port " + process.env.PORT);
+});
+
+const io = socket(server, {
+  cors: {
+    origin: process.env.ORIGIN,
+    credentials: true,
+  },
+});
+
+global.onlineUsers = new Map();
+
+io.on("connection", (socket) => {
+  global.chatSocket = socket;
+  socket.on("add-user", (userId) => {
+    onlineUsers.set(userId, socket.id);
+  });
+
+  socket.on("send-msg", (data) => {
+    const sendUserSocket = onlineUsers.get(data.from);
+    if (sendUserSocket) {
+      socket.to(sendUserSocket).emit("msg-receive", data.message);
+    }
+  });
 });
