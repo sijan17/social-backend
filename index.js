@@ -7,6 +7,8 @@ const postRoutes = require("./routes/postRoutes");
 const messageRoutes = require("./routes/messageRoutes");
 
 const app = express();
+app.use("/uploads", express.static("uploads"));
+
 const socket = require("socket.io");
 require("dotenv").config();
 app.use(cors());
