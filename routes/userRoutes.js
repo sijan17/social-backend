@@ -5,9 +5,11 @@ const {
   getUsers,
   userData,
   setAvatar,
+  searchUsers,
 } = require("../controllers/usersController");
 
-router.post("/setavatar/:id", setAvatar);
+router.post("/setavatar/:id", authenticateToken, setAvatar);
+router.get("/search/:term", authenticateToken, searchUsers);
 router.get("/users", authenticateToken, getUsers);
 router.get("/:username", authenticateToken, userData);
 router.post("/follow/:id", authenticateToken, follow);

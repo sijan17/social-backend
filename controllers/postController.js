@@ -170,3 +170,50 @@ module.exports.uploadImage = (req, res, next) => {
     next();
   });
 };
+
+module.exports.searchPosts = async (req, res, next) => {
+  const searchTerm = req.params.term;
+  if (searchTerm) {
+    const perPage = req.params.perpage ? req.params.perpage : 10;
+    try {
+      const id = req.user;
+      Post.find({
+        post: { $regex: searchTerm, $options: "i" },
+      })
+        .limit(perPage)
+        .sort({ createdAt: -1 })
+        .populate({
+          path: "user",
+          match: {},
+          select: "username avatarImage",
+          model: User,
+        })
+        .exec((err, posts) => {
+          if (err) next(err);
+          posts = posts.filter((post) => post.userId !== null);
+          const modifiedPosts = posts.map((post) => {
+            const hasImage = post.filename ? true : false;
+
+            return {
+              id: post._id,
+              post: post.post,
+              likes: post.likes.length,
+              time: post.createdAt,
+              hasImage,
+              path: post.path,
+              isLiked: post.likes.includes(req.user.id) ? true : false,
+              user: {
+                username: post.user.username,
+                avatarImage: post.user.avatarImage,
+              },
+            };
+          });
+          return res.json({ success: true, posts: modifiedPosts });
+        });
+
+      // }
+    } catch (ex) {
+      next(ex);
+    }
+  }
+};

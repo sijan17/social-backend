@@ -54,12 +54,16 @@ module.exports.userData = async (req, res, next) => {
     const user = await User.findOne({ username: username });
     const userId = user._id;
     const followerCount = user.followers.length;
-    const posts = await Post.find({ user: userId });
+    const posts = await Post.find({ user: userId })
+      .limit(10)
+      .sort({ createdAt: -1 });
     const modifiedPosts = posts.map((post) => ({
       id: post._id,
       post: post.post,
       likes: post.likes.length,
-      time: post.time,
+      time: post.createdAt,
+      hasImage: post.filename ? true : false,
+      path: post.path,
       isLiked: post.likes.includes(req.user.id) ? true : false,
     }));
     const followingCount = user.following.length;
@@ -113,5 +117,28 @@ module.exports.follow = async (req, res, next) => {
     }
   } catch (ex) {
     next(ex);
+  }
+};
+
+module.exports.searchUsers = async (req, res, next) => {
+  const searchTerm = req.params.term;
+  console.log(searchTerm);
+  if (searchTerm) {
+    try {
+      const users = await User.find({
+        username: { $regex: searchTerm, $options: "i" },
+      }).limit(5);
+      const modifiedUsers = users.map((user) => {
+        return {
+          id: user._id,
+          username: user.username,
+          avatarImage: user.avatarImage,
+        };
+      });
+
+      return res.json({ success: true, users: modifiedUsers });
+    } catch (err) {
+      next(err);
+    }
   }
 };

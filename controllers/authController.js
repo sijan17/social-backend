@@ -96,6 +96,7 @@ module.exports.checkAuth = async (req, res, next) => {
 };
 
 module.exports.authenticateToken = (req, res, next) => {
+  console.log("OK");
   const authHeader = req.headers["authorization"];
   const token = authHeader && authHeader.split(" ")[1];
   if (token == undefined) return res.json({ session: false });
