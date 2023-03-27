@@ -122,7 +122,6 @@ module.exports.follow = async (req, res, next) => {
 
 module.exports.searchUsers = async (req, res, next) => {
   const searchTerm = req.params.term;
-  console.log(searchTerm);
   if (searchTerm) {
     try {
       const users = await User.find({

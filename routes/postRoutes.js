@@ -1,5 +1,9 @@
 const { authenticateToken } = require("../controllers/authController");
-const { uploadImage, searchPosts } = require("../controllers/postController");
+const {
+  uploadImage,
+  searchPosts,
+  getTrendingTopics,
+} = require("../controllers/postController");
 const {
   likePost,
   GetPosts,
@@ -11,4 +15,5 @@ router.post("/", authenticateToken, uploadImage, postOne);
 router.get("/posts", authenticateToken, GetPosts);
 router.post("/like/:id", authenticateToken, likePost);
 router.get("/search/:term", authenticateToken, searchPosts);
+router.get("/trending", getTrendingTopics);
 module.exports = router;

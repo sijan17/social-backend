@@ -6,6 +6,8 @@ const dotenv = require("dotenv");
 const { userInfo } = require("./usersController");
 const multer = require("multer");
 const path = require("path");
+const natural = require("natural");
+const tokenizer = new natural.WordTokenizer();
 
 // get config vars
 dotenv.config();
@@ -215,5 +217,75 @@ module.exports.searchPosts = async (req, res, next) => {
     } catch (ex) {
       next(ex);
     }
+  }
+};
+
+module.exports.getTrendingTopics = async (req, res, next) => {
+  try {
+    const stopWords = new Set(natural.stopwords);
+
+    const twoDaysAgo = new Date();
+    twoDaysAgo.setDate(twoDaysAgo.getDate() - 2);
+
+    const result = await Post.collection
+      .aggregate([
+        {
+          $match: {
+            createdAt: { $gte: twoDaysAgo },
+          },
+        },
+        {
+          $project: {
+            _id: 0,
+            postId: "$_id",
+            words: {
+              $split: [{ $trim: { input: "$post", chars: ".,;:!?/" } }, " "],
+            },
+          },
+        },
+        {
+          $unwind: "$words",
+        },
+        {
+          $match: {
+            words: { $regex: /^[a-zA-Z0-9]*$/, $options: "i" },
+            words: { $nin: [...stopWords] },
+          },
+        },
+        {
+          $group: {
+            _id: { word: "$words", postId: "$postId" },
+          },
+        },
+        {
+          $group: {
+            _id: "$_id.word",
+            count: { $sum: 1 },
+            posts: { $addToSet: "$_id.postId" },
+          },
+        },
+        {
+          $match: {
+            _id: { $ne: "" },
+          },
+        },
+        {
+          $sort: { count: -1 },
+        },
+        {
+          $limit: 10,
+        },
+      ])
+      .toArray();
+
+    const trendingTopics = result.map((item) => ({
+      topic: item._id,
+      count: item.count,
+      postCount: item.posts.length,
+    }));
+
+    return res.json({ success: true, topics: trendingTopics });
+  } catch (ex) {
+    next(ex);
   }
 };
