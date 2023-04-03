@@ -5,6 +5,7 @@ const authRoutes = require("./routes/authRoutes");
 const userRoutes = require("./routes/userRoutes");
 const postRoutes = require("./routes/postRoutes");
 const messageRoutes = require("./routes/messageRoutes");
+const textRoutes = require("./routes/textRoutes");
 
 const app = express();
 app.use("/uploads", express.static("uploads"));
@@ -18,6 +19,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/user", userRoutes);
 app.use("/api/post", postRoutes);
 app.use("/api/message", messageRoutes);
+app.use("/api/text", textRoutes);
 
 mongoose.set("strictQuery", false);
 mongoose
